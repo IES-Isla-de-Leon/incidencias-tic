@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans 3", sans-serif;
+  --color-isla-50: #f1f7fb;
+  --color-isla-100: #e2eff7;
+  --color-isla-200: #c3dfea;
+  --color-isla-300: #94c7dd;
+  --color-isla-400: #5aa8c8;
+  --color-isla-500: #398dad;
+  --color-isla-600: #2b718f;
+  --color-isla-700: #265b74;
+  --color-isla-800: #244d60;
+  --color-isla-900: #213f50;
+  --color-isla-950: #0c2638;
+}
+
+@layer base {
+  body { @apply min-h-screen bg-slate-50 font-sans text-slate-900 antialiased; }
+  button, input, select, textarea { font: inherit; }
+  button, [role="button"] { @apply cursor-pointer; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-isla-600; }
+}
+
+@layer components {
+  .page-container { @apply mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8; }
+  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm; }
+  .btn-primary { @apply inline-flex min-h-11 items-center justify-center rounded-lg bg-isla-700 px-4 py-2.5 font-semibold text-white transition hover:bg-isla-800 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-ghost { @apply inline-flex min-h-10 items-center justify-center rounded-lg px-3 py-2 font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900; }
+  .field { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-isla-600 focus:ring-2 focus:ring-isla-100 disabled:bg-slate-100 disabled:text-slate-500; }
+  .label { @apply mb-1.5 block text-sm font-semibold text-slate-700; }
+  .eyebrow { @apply text-sm font-semibold uppercase tracking-wide text-isla-700; }
+  .section-title { @apply text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl; }
+  .notice-success { @apply rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900; }
+  .notice-error { @apply rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900; }
+}
+
