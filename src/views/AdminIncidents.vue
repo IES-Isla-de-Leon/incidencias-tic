@@ -69,36 +69,36 @@ onMounted(incidents.loadAdminIncidents)
     <section class="card overflow-hidden" aria-labelledby="incidents-list-title">
       <div class="border-b border-slate-200 p-5 sm:p-6">
         <h2 id="incidents-list-title" class="sr-only">Listado de incidencias</h2>
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_210px_190px_190px_220px]">
-          <div>
-            <label class="sr-only" for="incident-search">Buscar incidencias</label>
-            <input id="incident-search" v-model="search" class="field" type="search" placeholder="Buscar por código, texto, estancia o usuario…" />
+        <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-[minmax(200px,1.2fr)_repeat(4,minmax(0,1fr))]">
+          <div class="min-w-0">
+            <label class="label" for="incident-search">Buscar</label>
+            <input id="incident-search" v-model="search" class="field min-w-0 px-2.5 py-2 text-sm" type="search" placeholder="Código, texto, estancia o usuario…" />
           </div>
-          <div>
-            <label class="sr-only" for="type-filter">Filtrar por tipo</label>
-            <select id="type-filter" v-model="type" class="field">
-              <option value="">Todos los tipos</option>
+          <div class="min-w-0">
+            <label class="label" for="type-filter">Tipo</label>
+            <select id="type-filter" v-model="type" class="field min-w-0 px-2.5 py-2 text-sm">
+              <option value="">Todos</option>
               <option v-for="item in INCIDENT_TYPES" :key="item" :value="item">{{ incidentTypeLabel(item) }}</option>
             </select>
           </div>
-          <div>
-            <label class="sr-only" for="status-filter">Filtrar por estado</label>
-            <select id="status-filter" v-model="status" class="field">
-              <option value="">Todos los estados</option>
+          <div class="min-w-0">
+            <label class="label" for="status-filter">Estado</label>
+            <select id="status-filter" v-model="status" class="field min-w-0 px-2.5 py-2 text-sm">
+              <option value="">Todos</option>
               <option v-for="item in STATUSES" :key="item" :value="item">{{ statusLabel(item) }}</option>
             </select>
           </div>
-          <div>
-            <label class="sr-only" for="priority-filter">Filtrar por prioridad</label>
-            <select id="priority-filter" v-model="priority" class="field">
-              <option value="">Todas las prioridades</option>
+          <div class="min-w-0">
+            <label class="label" for="priority-filter">Prioridad</label>
+            <select id="priority-filter" v-model="priority" class="field min-w-0 px-2.5 py-2 text-sm">
+              <option value="">Todas</option>
               <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
             </select>
           </div>
-          <div>
-            <label class="sr-only" for="room-filter">Filtrar por estancia</label>
-            <select id="room-filter" v-model="roomId" class="field">
-              <option value="">Todas las estancias</option>
+          <div class="min-w-0">
+            <label class="label" for="room-filter">Estancia</label>
+            <select id="room-filter" v-model="roomId" class="field min-w-0 px-2.5 py-2 text-sm">
+              <option value="">Todas</option>
               <option v-for="room in roomOptions" :key="room.id" :value="room.id">{{ room.nombre }}</option>
             </select>
           </div>
