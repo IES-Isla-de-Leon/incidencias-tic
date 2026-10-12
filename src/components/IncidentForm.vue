@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { useAuth } from '../composables/useAuth.js'
 import { useIncidents } from '../composables/useIncidents.js'
+import RoomCombobox from './RoomCombobox.vue'
 
 const props = defineProps({
   type: { type: String, required: true },
@@ -70,12 +71,7 @@ async function submit() {
     <form class="space-y-5 p-5 sm:p-6" @submit.prevent="submit">
       <div v-if="type === 'EQUIPAMIENTO'">
         <label class="label" for="incident-room">Estancia</label>
-        <select id="incident-room" v-model="form.roomId" class="field" required :disabled="loadingRooms">
-          <option value="">{{ loadingRooms ? 'Cargando estancias…' : 'Selecciona una estancia' }}</option>
-          <option v-for="room in rooms" :key="room.id" :value="room.id">
-            {{ room.nombre }} · {{ room.ubicacion }}
-          </option>
-        </select>
+        <RoomCombobox v-model="form.roomId" :rooms="rooms" :loading="loadingRooms" />
       </div>
 
       <div>
