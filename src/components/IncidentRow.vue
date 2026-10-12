@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate } from '../lib/formatters.js'
+import { formatDate, incidentTypeLabel } from '../lib/formatters.js'
 import StatusBadge from './StatusBadge.vue'
 
 defineProps({
@@ -24,7 +24,8 @@ defineEmits(['open'])
 
     <span class="min-w-0">
       <span class="block truncate font-semibold text-slate-900">{{ incident.descripcion }}</span>
-      <span class="mt-0.5 block text-sm text-slate-500">{{ incident.estancias?.nombre || 'Sin estancia' }}</span>
+      <span class="mt-0.5 block text-sm text-slate-500">{{ incidentTypeLabel(incident.tipo) }}</span>
+      <span v-if="incident.estancias?.nombre" class="mt-0.5 block text-sm text-slate-500">{{ incident.estancias.nombre }}</span>
       <span v-if="showReporter && incident.usuarios" class="mt-0.5 block text-sm text-slate-500">
         {{ incident.usuarios.nombre }} · {{ incident.usuarios.email }}
       </span>

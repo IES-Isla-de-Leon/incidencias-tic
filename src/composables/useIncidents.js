@@ -3,7 +3,7 @@ import { friendlyError } from '../lib/formatters.js'
 import { supabase } from '../services/supabase.js'
 
 const INCIDENT_FIELDS = `
-  id,codigo,fecha_creacion,descripcion,prioridad,estado,creada_por,estancia_id,
+  id,codigo,fecha_creacion,descripcion,prioridad,estado,tipo,creada_por,estancia_id,
   estancias(nombre,ubicacion)
 `
 
@@ -52,12 +52,13 @@ export function useIncidents() {
     return true
   }
 
-  async function createIncident({ userId, roomId, description, urgent }) {
+  async function createIncident({ userId, type, roomId, description, urgent }) {
     const { data, error } = await supabase
       .from('incidencias')
       .insert({
         creada_por: userId,
-        estancia_id: roomId,
+        tipo: type,
+        estancia_id: type === 'EQUIPAMIENTO' ? roomId : null,
         descripcion: description.trim(),
         prioridad: urgent ? 'URGENTE' : 'NORMAL',
         estado: 'ABIERTA'
@@ -73,7 +74,7 @@ export function useIncidents() {
     const { data: incident, error } = await supabase
       .from('incidencias')
       .select(`
-        id,codigo,fecha_creacion,descripcion,prioridad,estado,creada_por,estancia_id,
+        id,codigo,fecha_creacion,descripcion,prioridad,estado,tipo,creada_por,estancia_id,
         estancias(nombre,ubicacion,equipamiento),
         usuarios!incidencias_creada_por_fkey(nombre,email)
       `)

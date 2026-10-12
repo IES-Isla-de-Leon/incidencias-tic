@@ -1,6 +1,7 @@
 export const ALLOWED_DOMAIN = 'iesisladeleon.es'
 export const PRIORITIES = ['BAJA', 'NORMAL', 'ALTA', 'URGENTE']
 export const STATUSES = ['ABIERTA', 'EN_PROGRESO', 'BLOQUEADA', 'RESUELTA']
+export const INCIDENT_TYPES = ['CUENTAS_USUARIO', 'EQUIPAMIENTO']
 
 export const LOCATIONS = [
   'Edif. principal, pl. baja',
@@ -24,5 +25,10 @@ export const PRIORITY_LABELS = {
   NORMAL: 'Normal',
   ALTA: 'Alta',
   URGENTE: 'Urgente'
+}
+
+export const INCIDENT_TYPE_LABELS = {
+  CUENTAS_USUARIO: 'Gestión de cuentas de usuario',
+  EQUIPAMIENTO: 'Incidencias sobre equipamiento'
 }
 

@@ -11,6 +11,15 @@ const auth = useAuth()
 const incidents = useIncidents()
 const rooms = useRooms()
 const selectedIncident = ref('')
+const incidentType = ref('')
+
+function selectIncidentType(type) {
+  incidentType.value = type
+}
+
+async function handleCreated() {
+  await loadIncidents()
+}
 
 async function loadIncidents() {
   await incidents.loadUserIncidents(auth.state.session.user.id)
@@ -32,10 +41,37 @@ onMounted(async () => {
     </section>
 
     <div class="grid gap-7">
+      <section v-if="!incidentType" class="card overflow-hidden" aria-labelledby="incident-type-title">
+        <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
+          <h2 id="incident-type-title" class="text-xl font-bold">¿Qué tipo de incidencia quieres comunicar?</h2>
+        </div>
+        <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+          <button
+            class="group flex min-h-52 flex-col items-center justify-center rounded-xl border-2 border-slate-200 bg-white p-6 text-center transition hover:border-isla-500 hover:bg-isla-50 focus-visible:border-isla-600"
+            type="button"
+            @click="selectIncidentType('CUENTAS_USUARIO')"
+          >
+            <span class="flex size-20 items-center justify-center rounded-2xl bg-isla-100 text-5xl text-isla-800" aria-hidden="true">@</span>
+            <span class="mt-5 block text-xl font-bold text-slate-950">Gestión de cuentas de usuario</span>
+          </button>
+          <button
+            class="group flex min-h-52 flex-col items-center justify-center rounded-xl border-2 border-slate-200 bg-white p-6 text-center transition hover:border-isla-500 hover:bg-isla-50 focus-visible:border-isla-600"
+            type="button"
+            @click="selectIncidentType('EQUIPAMIENTO')"
+          >
+            <span class="flex size-20 items-center justify-center rounded-2xl bg-isla-100 text-5xl text-isla-800" aria-hidden="true">▣</span>
+            <span class="mt-5 block text-xl font-bold text-slate-950">Incidencias sobre equipamiento</span>
+          </button>
+        </div>
+      </section>
+
       <IncidentForm
+        v-else
+        :type="incidentType"
         :rooms="rooms.activeRooms.value"
         :loading-rooms="rooms.state.loading"
-        @created="loadIncidents"
+        @cancel="incidentType = ''"
+        @created="handleCreated"
       />
 
       <section class="card overflow-hidden" aria-labelledby="my-incidents-title">

@@ -1,7 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { PRIORITIES, STATUSES } from '../lib/constants.js'
-import { formatDate, priorityLabel, statusLabel } from '../lib/formatters.js'
+import { formatDate, incidentTypeLabel, priorityLabel, statusLabel } from '../lib/formatters.js'
 import { useAuth } from '../composables/useAuth.js'
 import { useIncidents } from '../composables/useIncidents.js'
 import StatusBadge from './StatusBadge.vue'
@@ -142,8 +142,9 @@ onBeforeUnmount(() => {
             </div>
             <p class="mt-4 whitespace-pre-wrap text-lg leading-relaxed text-slate-800">{{ detail.descripcion }}</p>
             <dl class="mt-5 grid gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm sm:grid-cols-2">
-              <div><dt class="font-semibold text-slate-800">Estancia</dt><dd class="text-slate-600">{{ detail.estancias?.nombre }}</dd></div>
-              <div><dt class="font-semibold text-slate-800">Ubicación</dt><dd class="text-slate-600">{{ detail.estancias?.ubicacion }}</dd></div>
+              <div><dt class="font-semibold text-slate-800">Tipo</dt><dd class="text-slate-600">{{ incidentTypeLabel(detail.tipo) }}</dd></div>
+              <div v-if="detail.estancias"><dt class="font-semibold text-slate-800">Estancia</dt><dd class="text-slate-600">{{ detail.estancias.nombre }}</dd></div>
+              <div v-if="detail.estancias"><dt class="font-semibold text-slate-800">Ubicación</dt><dd class="text-slate-600">{{ detail.estancias.ubicacion }}</dd></div>
               <div><dt class="font-semibold text-slate-800">Creada</dt><dd class="text-slate-600">{{ formatDate(detail.fecha_creacion) }}</dd></div>
               <div v-if="admin && detail.usuarios"><dt class="font-semibold text-slate-800">Comunicada por</dt><dd class="text-slate-600">{{ detail.usuarios.nombre }}</dd></div>
             </dl>

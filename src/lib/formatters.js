@@ -1,4 +1,4 @@
-import { PRIORITY_LABELS, STATUS_LABELS } from './constants.js'
+import { INCIDENT_TYPE_LABELS, PRIORITY_LABELS, STATUS_LABELS } from './constants.js'
 
 export function formatDate(value) {
   if (!value) return ''
@@ -15,6 +15,10 @@ export function statusLabel(value) {
 
 export function priorityLabel(value) {
   return PRIORITY_LABELS[value] ?? value ?? ''
+}
+
+export function incidentTypeLabel(value) {
+  return INCIDENT_TYPE_LABELS[value] ?? value ?? ''
 }
 
 export function friendlyError(error) {

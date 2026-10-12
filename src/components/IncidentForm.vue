@@ -3,12 +3,13 @@ import { reactive, ref } from 'vue'
 import { useAuth } from '../composables/useAuth.js'
 import { useIncidents } from '../composables/useIncidents.js'
 
-defineProps({
+const props = defineProps({
+  type: { type: String, required: true },
   rooms: { type: Array, required: true },
   loadingRooms: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['created'])
+const emit = defineEmits(['created', 'cancel'])
 const auth = useAuth()
 const incidents = useIncidents()
 const submitting = ref(false)
@@ -20,7 +21,12 @@ async function submit() {
   message.value = ''
   error.value = ''
 
-  if (!form.roomId || !form.description.trim()) {
+  if (!form.description.trim()) {
+    error.value = 'Describe el problema.'
+    return
+  }
+
+  if (props.type === 'EQUIPAMIENTO' && !form.roomId) {
     error.value = 'Selecciona una estancia y describe el problema.'
     return
   }
@@ -29,6 +35,7 @@ async function submit() {
   try {
     const result = await incidents.createIncident({
       userId: auth.state.session.user.id,
+      type: props.type,
       roomId: form.roomId,
       description: form.description,
       urgent: form.urgent
@@ -49,12 +56,19 @@ async function submit() {
 <template>
   <section class="card overflow-hidden" aria-labelledby="new-incident-title">
     <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
-      <h2 id="new-incident-title" class="text-xl font-bold">Nueva incidencia</h2>
-      <p class="mt-1 text-slate-600">Indica la estancia y describe el problema con claridad.</p>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="eyebrow">Nueva incidencia</p>
+          <h2 id="new-incident-title" class="mt-1 text-xl font-bold">
+            {{ type === 'CUENTAS_USUARIO' ? 'Gestión de cuentas de usuario' : 'Incidencias sobre equipamiento' }}
+          </h2>
+        </div>
+        <button class="btn-ghost shrink-0 self-start" type="button" @click="emit('cancel')">Cambiar tipo</button>
+      </div>
     </div>
 
     <form class="space-y-5 p-5 sm:p-6" @submit.prevent="submit">
-      <div>
+      <div v-if="type === 'EQUIPAMIENTO'">
         <label class="label" for="incident-room">Estancia</label>
         <select id="incident-room" v-model="form.roomId" class="field" required :disabled="loadingRooms">
           <option value="">{{ loadingRooms ? 'Cargando estancias…' : 'Selecciona una estancia' }}</option>
@@ -72,7 +86,7 @@ async function submit() {
           class="field min-h-36 resize-y"
           maxlength="4000"
           required
-          placeholder="Ej.: El ordenador del profesor no enciende."
+          :placeholder="type === 'CUENTAS_USUARIO' ? 'Explica el problema con la cuenta de usuario.' : 'Ej.: El ordenador del profesor no enciende.'"
         ></textarea>
         <p class="mt-1 text-right text-xs text-slate-400">{{ form.description.length }}/4000</p>
       </div>
@@ -91,7 +105,7 @@ async function submit() {
       <div v-if="error" class="notice-error" role="alert">{{ error }}</div>
 
       <div class="flex justify-end">
-        <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="submitting || loadingRooms">
+        <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="submitting || (type === 'EQUIPAMIENTO' && loadingRooms)">
           {{ submitting ? 'Enviando…' : 'Enviar incidencia' }}
         </button>
       </div>

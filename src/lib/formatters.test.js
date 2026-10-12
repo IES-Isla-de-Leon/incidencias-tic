@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   formatDate,
   friendlyError,
+  incidentTypeLabel,
   isCorporateEmail,
   oauthRedirectUrl,
   priorityLabel,
@@ -12,6 +13,7 @@ describe('formatters', () => {
   it('formatea las etiquetas del dominio', () => {
     expect(statusLabel('EN_PROGRESO')).toBe('En progreso')
     expect(priorityLabel('URGENTE')).toBe('Urgente')
+    expect(incidentTypeLabel('CUENTAS_USUARIO')).toBe('Gestión de cuentas de usuario')
   })
 
   it('muestra las fechas en la zona de Madrid', () => {

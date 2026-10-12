@@ -47,9 +47,10 @@ La base remota tiene aplicadas, en este orden, las migraciones:
 ```text
 supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
 supabase/migrations/202610120002_permitir_borrado_incidencias.sql
+supabase/migrations/202610120003_clasificar_incidencias.sql
 ```
 
-Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación y permiten borrar incidencias únicamente a los administradores.
+Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores y distinguen entre incidencias de cuentas de usuario y de equipamiento.
 
 La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto está vinculado. Para revisar y aplicar futuras migraciones:
 
@@ -64,6 +65,8 @@ npx supabase db push
 - Cuenta externa: se cierra la sesión y se explica la restricción de dominio.
 - Usuario desactivado: se cierra la sesión y se muestra un aviso.
 - Usuario normal: crea y consulta solo sus incidencias y seguimientos.
+- Usuario normal: al entrar elige entre gestión de cuentas de usuario e incidencias sobre equipamiento.
+- Usuario normal: una incidencia de cuentas solicita únicamente descripción y urgencia; una de equipamiento conserva la selección de estancia.
 - Administrador: consulta todas, filtra, cambia prioridad y registra cambios de estado.
 - Administrador: abre las incidencias de una estancia desde su recuento y puede cambiar o retirar ese filtro.
 - Administrador: elimina una incidencia de prueba tras la confirmación y se elimina también su seguimiento.

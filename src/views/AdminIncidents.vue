@@ -3,8 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IncidentDetailModal from '../components/IncidentDetailModal.vue'
 import IncidentList from '../components/IncidentList.vue'
-import { PRIORITIES, STATUSES } from '../lib/constants.js'
-import { priorityLabel, statusLabel } from '../lib/formatters.js'
+import { INCIDENT_TYPES, PRIORITIES, STATUSES } from '../lib/constants.js'
+import { incidentTypeLabel, priorityLabel, statusLabel } from '../lib/formatters.js'
 import { useIncidents } from '../composables/useIncidents.js'
 
 const incidents = useIncidents()
@@ -14,6 +14,7 @@ const selectedIncident = ref('')
 const search = ref('')
 const status = ref('')
 const priority = ref('')
+const type = ref('')
 const roomId = computed({
   get: () => typeof route.query.estancia === 'string' ? route.query.estancia : '',
   set: (value) => router.replace({
@@ -39,11 +40,13 @@ const filtered = computed(() => {
     if (roomId.value && incident.estancia_id !== roomId.value) return false
     if (status.value && incident.estado !== status.value) return false
     if (priority.value && incident.prioridad !== priority.value) return false
+    if (type.value && incident.tipo !== type.value) return false
     if (!query) return true
 
     return [
       incident.codigo,
       incident.descripcion,
+      incidentTypeLabel(incident.tipo),
       incident.estancias?.nombre,
       incident.estancias?.ubicacion,
       incident.usuarios?.nombre,
@@ -66,10 +69,17 @@ onMounted(incidents.loadAdminIncidents)
     <section class="card overflow-hidden" aria-labelledby="incidents-list-title">
       <div class="border-b border-slate-200 p-5 sm:p-6">
         <h2 id="incidents-list-title" class="sr-only">Listado de incidencias</h2>
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_220px_220px_240px]">
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_210px_190px_190px_220px]">
           <div>
             <label class="sr-only" for="incident-search">Buscar incidencias</label>
             <input id="incident-search" v-model="search" class="field" type="search" placeholder="Buscar por código, texto, estancia o usuario…" />
+          </div>
+          <div>
+            <label class="sr-only" for="type-filter">Filtrar por tipo</label>
+            <select id="type-filter" v-model="type" class="field">
+              <option value="">Todos los tipos</option>
+              <option v-for="item in INCIDENT_TYPES" :key="item" :value="item">{{ incidentTypeLabel(item) }}</option>
+            </select>
           </div>
           <div>
             <label class="sr-only" for="status-filter">Filtrar por estado</label>
