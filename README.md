@@ -42,13 +42,14 @@ La aplicación utiliza rutas hash y `base: './'`, por lo que puede desplegarse e
 
 La interfaz oculta las acciones no autorizadas, pero la protección real reside en las políticas RLS de Supabase. Nunca debe incluirse una clave `service_role` ni secretos OAuth en el frontend.
 
-Antes de usar la administración de la versión Vue debe aplicarse, mediante el editor SQL de Supabase, la migración:
+Antes de usar la administración de la versión Vue deben aplicarse, mediante el editor SQL de Supabase y en este orden, las migraciones:
 
 ```text
 supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
+supabase/migrations/202610120002_permitir_borrado_incidencias.sql
 ```
 
-Esta migración fuerza que los cambios de estado procedan del historial de actualizaciones y sustituye el borrado de estancias por su activación/desactivación.
+Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación y permiten borrar incidencias únicamente a los administradores.
 
 ## Validación manual recomendada
 

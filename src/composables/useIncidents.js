@@ -115,13 +115,25 @@ export function useIncidents() {
     }
   }
 
+  async function deleteIncident(id) {
+    const { error } = await supabase
+      .from('incidencias')
+      .delete()
+      .eq('id', id)
+      .select('id')
+      .single()
+
+    if (error) throw new Error(friendlyError(error))
+  }
+
   return {
     state,
     loadUserIncidents,
     loadAdminIncidents,
     createIncident,
     loadIncidentDetail,
-    updateIncident
+    updateIncident,
+    deleteIncident
   }
 }
 

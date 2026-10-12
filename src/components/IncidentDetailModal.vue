@@ -17,7 +17,10 @@ const incidents = useIncidents()
 const detail = ref(null)
 const loading = ref(false)
 const saving = ref(false)
+const deleting = ref(false)
+const confirmingDelete = ref(false)
 const error = ref('')
+const deleteError = ref('')
 const message = ref('')
 const priority = ref('NORMAL')
 const status = ref('ABIERTA')
@@ -34,12 +37,29 @@ async function load() {
     priority.value = detail.value.prioridad
     status.value = detail.value.estado
     observation.value = ''
+    confirmingDelete.value = false
+    deleteError.value = ''
     await nextTick()
     closeButton.value?.focus()
   } catch (caught) {
     error.value = caught.message
   } finally {
     loading.value = false
+  }
+}
+
+async function removeIncident() {
+  deleting.value = true
+  deleteError.value = ''
+
+  try {
+    await incidents.deleteIncident(detail.value.id)
+    emit('saved')
+    emit('close')
+  } catch (caught) {
+    deleteError.value = caught.message
+  } finally {
+    deleting.value = false
   }
 }
 
@@ -169,11 +189,45 @@ onBeforeUnmount(() => {
               <div v-if="message" class="notice-success" role="status">{{ message }}</div>
               <div v-if="error" class="notice-error" role="alert">{{ error }}</div>
               <div class="flex justify-end">
-                <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="saving">
+                <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="saving || deleting">
                   {{ saving ? 'Guardando…' : 'Guardar actualización' }}
                 </button>
               </div>
             </form>
+          </section>
+
+          <section v-if="admin" class="border-t border-slate-200 p-5 sm:p-6">
+            <div v-if="!confirmingDelete" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="font-bold text-slate-900">Eliminar incidencia</h3>
+                <p class="mt-1 text-sm text-slate-600">Esta acción elimina también todo su historial de seguimiento.</p>
+              </div>
+              <button
+                class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-800 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                :disabled="saving"
+                @click="confirmingDelete = true; deleteError = ''"
+              >
+                Eliminar incidencia
+              </button>
+            </div>
+
+            <div v-else class="rounded-lg border border-rose-200 bg-rose-50 p-4">
+              <h3 class="font-bold text-rose-950">¿Eliminar {{ detail.codigo }} definitivamente?</h3>
+              <p class="mt-1 text-sm text-rose-800">No se podrá recuperar la incidencia ni su historial.</p>
+              <div v-if="deleteError" class="mt-4 notice-error" role="alert">{{ deleteError }}</div>
+              <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button class="btn-secondary" type="button" :disabled="deleting" @click="confirmingDelete = false">Cancelar</button>
+                <button
+                  class="inline-flex min-h-11 items-center justify-center rounded-lg bg-rose-700 px-4 py-2.5 font-semibold text-white transition hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  type="button"
+                  :disabled="deleting"
+                  @click="removeIncident"
+                >
+                  {{ deleting ? 'Eliminando…' : 'Sí, eliminar definitivamente' }}
+                </button>
+              </div>
+            </div>
           </section>
         </template>
       </section>
