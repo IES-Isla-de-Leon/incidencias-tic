@@ -117,7 +117,15 @@ onMounted(() => rooms.loadRooms({ includeIncidentCounts: true }))
           </div>
           <p class="text-sm text-slate-600">{{ room.ubicacion }}</p>
           <p class="text-sm text-slate-600">
-            <span class="font-semibold text-slate-900">{{ room.incidentCount }}</span>
+            <RouterLink
+              v-if="room.incidentCount > 0"
+              class="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md font-semibold text-isla-700 underline decoration-isla-300 underline-offset-4 transition hover:bg-isla-50 hover:text-isla-900"
+              :to="{ name: 'admin-incidents', query: { estancia: room.id } }"
+              :aria-label="`Ver las ${room.incidentCount} incidencias de ${room.nombre}`"
+            >
+              {{ room.incidentCount }}
+            </RouterLink>
+            <span v-else class="inline-flex min-h-8 min-w-8 items-center justify-center font-semibold text-slate-400">0</span>
             <span class="md:hidden"> incidencia{{ room.incidentCount === 1 ? '' : 's' }}</span>
           </p>
           <p class="text-sm font-semibold" :class="room.activo ? 'text-emerald-700' : 'text-slate-400'">{{ room.activo ? 'Activa' : 'Inactiva' }}</p>

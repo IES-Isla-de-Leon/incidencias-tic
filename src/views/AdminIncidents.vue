@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import IncidentDetailModal from '../components/IncidentDetailModal.vue'
 import IncidentList from '../components/IncidentList.vue'
 import { PRIORITIES, STATUSES } from '../lib/constants.js'
@@ -7,14 +8,35 @@ import { priorityLabel, statusLabel } from '../lib/formatters.js'
 import { useIncidents } from '../composables/useIncidents.js'
 
 const incidents = useIncidents()
+const route = useRoute()
+const router = useRouter()
 const selectedIncident = ref('')
 const search = ref('')
 const status = ref('')
 const priority = ref('')
+const roomId = computed({
+  get: () => typeof route.query.estancia === 'string' ? route.query.estancia : '',
+  set: (value) => router.replace({
+    query: { ...route.query, estancia: value || undefined }
+  })
+})
+
+const roomOptions = computed(() => {
+  const roomsById = new Map()
+  incidents.state.incidents.forEach((incident) => {
+    if (incident.estancia_id && incident.estancias?.nombre) {
+      roomsById.set(incident.estancia_id, incident.estancias.nombre)
+    }
+  })
+  return [...roomsById.entries()]
+    .map(([id, nombre]) => ({ id, nombre }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+})
 
 const filtered = computed(() => {
   const query = search.value.trim().toLowerCase()
   return incidents.state.incidents.filter((incident) => {
+    if (roomId.value && incident.estancia_id !== roomId.value) return false
     if (status.value && incident.estado !== status.value) return false
     if (priority.value && incident.prioridad !== priority.value) return false
     if (!query) return true
@@ -44,7 +66,7 @@ onMounted(incidents.loadAdminIncidents)
     <section class="card overflow-hidden" aria-labelledby="incidents-list-title">
       <div class="border-b border-slate-200 p-5 sm:p-6">
         <h2 id="incidents-list-title" class="sr-only">Listado de incidencias</h2>
-        <div class="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_220px_220px]">
+        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_220px_220px_240px]">
           <div>
             <label class="sr-only" for="incident-search">Buscar incidencias</label>
             <input id="incident-search" v-model="search" class="field" type="search" placeholder="Buscar por código, texto, estancia o usuario…" />
@@ -61,6 +83,13 @@ onMounted(incidents.loadAdminIncidents)
             <select id="priority-filter" v-model="priority" class="field">
               <option value="">Todas las prioridades</option>
               <option v-for="item in PRIORITIES" :key="item" :value="item">{{ priorityLabel(item) }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="sr-only" for="room-filter">Filtrar por estancia</label>
+            <select id="room-filter" v-model="roomId" class="field">
+              <option value="">Todas las estancias</option>
+              <option v-for="room in roomOptions" :key="room.id" :value="room.id">{{ room.nombre }}</option>
             </select>
           </div>
         </div>
