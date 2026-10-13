@@ -1,5 +1,5 @@
 -- Ajustes acordados tras la validación del MVP.
--- Ejecutar sobre el proyecto Supabase actual después de rls_incidencias_tic.sql.
+-- Se aplica después de 202610110002_politicas_rls_iniciales.sql.
 
 -- Todo cambio de estado debe proceder de una fila inmutable de actualizaciones.
 -- El trigger SECURITY DEFINER sincronizar_estado_incidencia conserva la capacidad

@@ -1,6 +1,21 @@
 # Incidencias TIC · IES Isla de León
 
-Migración del MVP validado a Vue 3, Vite y Tailwind CSS compilado.
+Aplicación interna para comunicar y gestionar incidencias TIC del centro. El frontend utiliza Vue 3, Vite y Tailwind CSS compilado; Supabase proporciona autenticación, PostgreSQL, RLS, funciones y tareas programadas.
+
+## Estructura
+
+```text
+src/                 Aplicación Vue.
+supabase/functions/  Edge Functions.
+supabase/migrations/ Historial completo y reproducible de la base de datos.
+docs/                Arquitectura, modelo de datos y documentación histórica.
+```
+
+Documentación:
+
+- [Arquitectura y estado operativo](docs/arquitectura.md)
+- [Modelo de datos](docs/modelo-datos.md)
+- [Plan inicial histórico](docs/historico/plan-inicial.md)
 
 ## Desarrollo
 
@@ -45,13 +60,15 @@ La interfaz oculta las acciones no autorizadas, pero la protección real reside 
 La base remota tiene aplicadas, en este orden, las migraciones:
 
 ```text
+supabase/migrations/202610110001_esquema_inicial.sql
+supabase/migrations/202610110002_politicas_rls_iniciales.sql
 supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
 supabase/migrations/202610120002_permitir_borrado_incidencias.sql
 supabase/migrations/202610120003_clasificar_incidencias.sql
 supabase/migrations/202610130001_avisos_email.sql
 ```
 
-Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento y añaden la cola de avisos por correo.
+Las dos primeras migraciones recogen el esquema y las políticas RLS que originalmente se aplicaron de forma manual. Las posteriores fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento y añaden la cola de avisos por correo.
 
 La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto está vinculado. Para revisar y aplicar futuras migraciones:
 
