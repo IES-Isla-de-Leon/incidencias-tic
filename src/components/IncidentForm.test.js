@@ -48,5 +48,12 @@ describe('IncidentForm', () => {
       description: 'No puedo iniciar sesión.',
       urgent: false
     })
+    expect(wrapper.find('form').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Incidencia enviada correctamente')
+    expect(wrapper.text()).toContain('INC-2026-0001')
+    expect(wrapper.emitted('created')).toHaveLength(1)
+
+    await wrapper.get('button').trigger('click')
+    expect(wrapper.emitted('cancel')).toHaveLength(1)
   })
 })

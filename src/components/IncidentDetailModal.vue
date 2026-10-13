@@ -18,6 +18,7 @@ const detail = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
+const quickStatus = ref('')
 const confirmingDelete = ref(false)
 const error = ref('')
 const deleteError = ref('')
@@ -64,9 +65,15 @@ async function removeIncident() {
 }
 
 async function save() {
+  return saveWithStatus(status.value)
+}
+
+async function saveWithStatus(nextStatus, quickAction = '') {
   saving.value = true
+  quickStatus.value = quickAction
   message.value = ''
   error.value = ''
+  status.value = nextStatus
 
   try {
     await incidents.updateIncident({
@@ -83,6 +90,7 @@ async function save() {
     error.value = caught.message
   } finally {
     saving.value = false
+    quickStatus.value = ''
   }
 }
 
@@ -189,9 +197,30 @@ onBeforeUnmount(() => {
               <p class="text-sm text-slate-500">Los cambios de estado quedan registrados en el seguimiento.</p>
               <div v-if="message" class="notice-success" role="status">{{ message }}</div>
               <div v-if="error" class="notice-error" role="alert">{{ error }}</div>
-              <div class="flex justify-end">
-                <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="saving || deleting">
-                  {{ saving ? 'Guardando…' : 'Guardar actualización' }}
+              <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-2 sm:flex-row sm:border-r sm:border-slate-200 sm:pr-4">
+                  <button
+                    v-if="detail.estado === 'ABIERTA'"
+                    class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-isla-300 bg-isla-100 px-4 py-2.5 font-semibold text-isla-800 transition hover:bg-isla-200 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    type="button"
+                    :disabled="saving || deleting"
+                    data-test="start-progress"
+                    @click="saveWithStatus('EN_PROGRESO', 'EN_PROGRESO')"
+                  >
+                    {{ quickStatus === 'EN_PROGRESO' ? 'Iniciando…' : 'Iniciar trabajo' }}
+                  </button>
+                  <button
+                    class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2.5 font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    type="button"
+                    :disabled="saving || deleting || detail.estado === 'RESUELTA'"
+                    data-test="resolve"
+                    @click="saveWithStatus('RESUELTA', 'RESUELTA')"
+                  >
+                    {{ quickStatus === 'RESUELTA' ? 'Resolviendo…' : detail.estado === 'RESUELTA' ? 'Resuelta' : 'Resolver' }}
+                  </button>
+                </div>
+                <button class="btn-primary w-full sm:w-auto" type="submit" :disabled="saving || deleting" data-test="save-update">
+                  {{ saving && !quickStatus ? 'Guardando…' : 'Guardar actualización' }}
                 </button>
               </div>
             </form>
