@@ -1,17 +1,17 @@
 # Arquitectura y estado operativo — Gestión de incidencias TIC · IES Isla de León
 
-> Fuente de verdad actual del proyecto. Actualizado el 13/10/2026.
+> Fuente de verdad actual del proyecto. Actualizado el 14/10/2026.
 >
 > La aplicación vigente ocupa la raíz del repositorio. Las secciones que describen la migración desde los prototipos se conservan como contexto, pero esa migración ya está implementada.
 
 ## Resumen operativo actual
 
 - Frontend Vue 3 + Vite + Tailwind CSS compilado: implementado.
-- Backend Supabase y RLS del MVP: operativo; las migraciones `202610120001`, `202610120002`, `202610120003` y `202610130001` están aplicadas en remoto.
+- Backend Supabase y RLS del MVP: operativo; las migraciones hasta `202610140001` están aplicadas en remoto.
 - Avisos por correo: activos mediante Resend, Edge Function, cola persistente y reintentos.
 - Lint, 11 pruebas unitarias, comprobación de tipos de la Edge Function y build de producción: correctos.
-- Git: inicializado en la raíz del proyecto, con historial de commits en `master` y sin remoto.
-- Publicación: ninguna. No publicar sin petición expresa.
+- Git: repositorio `IES-Isla-de-Leon/incidencias-tic`, rama principal `main` y remoto `origin` configurado.
+- Publicación: GitHub Pages mediante GitHub Actions en `https://ies-isla-de-leon.github.io/incidencias-tic/`.
 - Pendiente: completar pruebas manuales autenticadas con perfiles `USUARIO` y `ADMINISTRADOR`.
 - Servidor local canónico: `http://localhost:4173/`.
 - Vite usa el puerto `4173` en modo estricto; no cambia automáticamente si está ocupado.
@@ -858,17 +858,14 @@ Remitente: TDE <tde@iesisladeleon.es>
 
 # 20. Prioridad inmediata actual
 
-**No publicar la aplicación sin petición expresa.**
-
 Orden actual:
 
-1. Validar manualmente con una cuenta `USUARIO` y otra `ADMINISTRADOR`.
-2. Comprobar el borrado de una incidencia de prueba y la eliminación en cascada de su seguimiento.
-3. Verificar filtros, navegación entre estancias e incidencias y comportamiento en móvil.
-4. Verificar de extremo a extremo el primer correo por incidencia nueva y el primer correo por actualización real.
+1. Mantener el workflow de GitHub Pages verde: lint, 11 pruebas y build deben pasar antes de cada despliegue.
+2. Validar desde un equipo externo el acceso con una cuenta `USUARIO` y otra `ADMINISTRADOR`.
+3. Comprobar creación, seguimiento, filtros, navegación y comportamiento móvil en producción.
+4. Verificar los avisos de correo de una incidencia nueva y de una actualización real.
 5. Revisar periódicamente si existen filas `FALLIDO` en `avisos_email`.
 6. Corregir cualquier incidencia encontrada en esos flujos.
-7. Crear el repositorio remoto y preparar GitHub Pages solo cuando se solicite expresamente.
 
 ---
 
@@ -903,7 +900,7 @@ Incluye:
 - Supabase CLI instalada como dependencia de desarrollo y proyecto remoto vinculado;
 - avisos por correo mediante Resend desde `TDE <tde@iesisladeleon.es>`;
 - Edge Function protegida por secreto, cola por destinatario, idempotencia y hasta cinco intentos;
-- Git inicializado en la raíz, con historial de commits en `master` y sin remoto.
+- Git publicado en `IES-Isla-de-Leon/incidencias-tic`, con rama principal `main`.
 
 Los prototipos Vanilla y los bancos de pruebas se conservan como referencia y no deben seguir evolucionándose.
 
@@ -916,8 +913,8 @@ Los prototipos Vanilla y los bancos de pruebas se conservan como referencia y no
 - Los cambios de prioridad no requieren historial.
 - Las estancias no se borran desde la aplicación; se desactivan.
 - Las incidencias pueden ser eliminadas únicamente por administradores; su seguimiento se elimina en cascada.
-- La URL definitiva de GitHub Pages se configurará cuando exista el repositorio remoto.
-- No se publicará ni desplegará nada sin una petición expresa.
+- La URL definitiva es `https://ies-isla-de-leon.github.io/incidencias-tic/`.
+- Los despliegues se realizan mediante el workflow `.github/workflows/deploy-pages.yml` tras superar lint, pruebas y build.
 - La creación de incidencias comienza con dos opciones: `Gestión de cuentas de usuario` e `Incidencias sobre equipamiento`.
 - Las incidencias de cuentas solicitan descripción y urgencia, sin estancia; las de equipamiento conservan el formulario previo.
 - `incidencias.tipo` usa `CUENTAS_USUARIO` o `EQUIPAMIENTO`; las incidencias anteriores se clasifican como `EQUIPAMIENTO`.
@@ -949,14 +946,17 @@ supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
 supabase/migrations/202610120002_permitir_borrado_incidencias.sql
 supabase/migrations/202610120003_clasificar_incidencias.sql
 supabase/migrations/202610130001_avisos_email.sql
+supabase/migrations/202610140001_endurecer_funciones_privilegiadas.sql
 ```
 
-Las dos migraciones de 11/10 documentan el esquema y las políticas que originalmente se aplicaron manualmente; en remoto están registradas como aplicadas sin volver a ejecutar su contenido. La CLI de Supabase está instalada como dependencia de desarrollo. `npx supabase migration list` y `npx supabase db push --dry-run` confirman que la base remota está al día. Los archivos locales de vinculación de `supabase/.temp/` están excluidos de Git.
+Las dos migraciones de 11/10 documentan el esquema y las políticas que originalmente se aplicaron manualmente; en remoto están registradas como aplicadas sin volver a ejecutar su contenido. La migración de 14/10 fija un `search_path` vacío para las funciones `SECURITY DEFINER` y reduce sus permisos de ejecución al mínimo necesario. La CLI de Supabase está instalada como dependencia de desarrollo. `npx supabase migration list` y `npx supabase db push --dry-run` confirman que la base remota está al día. Los archivos locales de vinculación de `supabase/.temp/` están excluidos de Git.
 
 La Edge Function desplegada es `notificar-incidencia` y debe mantenerse con verificación JWT desactivada porque valida el encabezado `x-webhook-secret`. La cola intenta invocarla inmediatamente y el trabajo `procesar-avisos-email` vuelve a invocarla cada minuto. La última comprobación se realizó con la cola vacía y devolvió cero procesados, enviados y fallidos.
 
 ## Secretos y configuración local
 
 `.env.local` está excluido del control de versiones y solo contiene la configuración pública necesaria para el frontend. No deben crearse archivos de credenciales dentro del proyecto.
+
+`supabase/config.toml` conserva la configuración reproducible no secreta. La producción usa la URL de GitHub Pages como `site_url`; las únicas redirecciones permitidas son la producción y `http://localhost:4173/`.
 
 `RESEND_API_KEY` e `INCIDENT_EMAIL_WEBHOOK_SECRET` viven en Edge Function Secrets. `incident_email_webhook_secret` y `project_url` viven en Vault. El secreto del webhook debe coincidir en ambos almacenes. La clave de Resend no debe conservarse en archivos locales.

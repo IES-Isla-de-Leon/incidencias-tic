@@ -51,7 +51,15 @@ npm run build
 
 ## Despliegue
 
-La aplicación utiliza rutas hash y `base: './'`, por lo que puede desplegarse en una subcarpeta de GitHub Pages. Antes de publicar hay que añadir la URL final a las Redirect URLs permitidas en Supabase Auth.
+La aplicación se publica mediante GitHub Actions en:
+
+```text
+https://ies-isla-de-leon.github.io/incidencias-tic/
+```
+
+El workflow `.github/workflows/deploy-pages.yml` ejecuta lint, pruebas y build antes de desplegar. Las variables públicas `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` se configuran como variables del repositorio en GitHub. La aplicación utiliza rutas hash y `base: './'`, por lo que funciona dentro de la subcarpeta de GitHub Pages.
+
+Supabase Auth debe tener la URL de producción como `Site URL` y como Redirect URL exacta. Google OAuth debe admitir `https://ies-isla-de-leon.github.io` como origen JavaScript; la URI de redirección de Google sigue siendo la callback de Supabase.
 
 ## Seguridad
 
@@ -66,9 +74,10 @@ supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
 supabase/migrations/202610120002_permitir_borrado_incidencias.sql
 supabase/migrations/202610120003_clasificar_incidencias.sql
 supabase/migrations/202610130001_avisos_email.sql
+supabase/migrations/202610140001_endurecer_funciones_privilegiadas.sql
 ```
 
-Las dos primeras migraciones recogen el esquema y las políticas RLS que originalmente se aplicaron de forma manual. Las posteriores fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento y añaden la cola de avisos por correo.
+Las dos primeras migraciones recogen el esquema y las políticas RLS que originalmente se aplicaron de forma manual. Las posteriores fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento, añaden la cola de avisos por correo y endurecen las funciones `SECURITY DEFINER` y sus permisos de ejecución.
 
 La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto está vinculado. Para revisar y aplicar futuras migraciones:
 
