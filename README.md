@@ -48,9 +48,10 @@ La base remota tiene aplicadas, en este orden, las migraciones:
 supabase/migrations/202610120001_reforzar_historial_y_baja_estancias.sql
 supabase/migrations/202610120002_permitir_borrado_incidencias.sql
 supabase/migrations/202610120003_clasificar_incidencias.sql
+supabase/migrations/202610130001_avisos_email.sql
 ```
 
-Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores y distinguen entre incidencias de cuentas de usuario y de equipamiento.
+Estas migraciones fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento y añaden la cola de avisos por correo.
 
 La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto está vinculado. Para revisar y aplicar futuras migraciones:
 
@@ -58,6 +59,51 @@ La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto 
 npx supabase migration list
 npx supabase db push --dry-run
 npx supabase db push
+```
+
+## Avisos por correo
+
+Los avisos transaccionales se envían mediante Resend desde la Edge Function:
+
+```text
+supabase/functions/notificar-incidencia/
+```
+
+El remitente es `TDE <tde@iesisladeleon.es>`. Los eventos configurados son:
+
+- nueva incidencia: un correo para cada administrador activo;
+- nueva actualización: un correo para el usuario creador si contiene una observación, un cambio de estado o ambos;
+- cambio exclusivo de prioridad: no genera correo;
+- creación de incidencia: no genera un correo de confirmación al usuario.
+
+`avisos_email` funciona como cola interna. Cada fila representa un destinatario, tiene una clave de idempotencia estable y admite hasta cinco intentos. La inserción intenta despertar inmediatamente la Edge Function y el trabajo `procesar-avisos-email` la invoca cada minuto para recuperar fallos o ejecuciones interrumpidas.
+
+La tabla no es accesible desde el frontend. La función requiere:
+
+- `RESEND_API_KEY`, almacenada en Edge Function Secrets;
+- `INCIDENT_EMAIL_WEBHOOK_SECRET`, almacenado en Edge Function Secrets;
+- `incident_email_webhook_secret`, con el mismo valor, almacenado en Vault;
+- `project_url`, almacenado en Vault.
+
+No se deben copiar esos valores al repositorio, a archivos `.env` del frontend ni a la documentación. Para desplegar de nuevo la función:
+
+```text
+npx supabase functions deploy notificar-incidencia --no-verify-jwt --use-api
+```
+
+Una llamada correcta con la cola vacía devuelve:
+
+```json
+{"processed":0,"sent":0,"failed":0}
+```
+
+Para consultar el estado de los envíos desde SQL:
+
+```sql
+select estado, count(*)
+from public.avisos_email
+group by estado
+order by estado;
 ```
 
 ## Validación manual recomendada
@@ -71,6 +117,9 @@ npx supabase db push
 - Administrador: abre las incidencias de una estancia desde su recuento y puede cambiar o retirar ese filtro.
 - Administrador: elimina una incidencia de prueba tras la confirmación y se elimina también su seguimiento.
 - Administrador: crea, edita, activa y desactiva estancias.
+- Avisos: una nueva incidencia avisa a los administradores activos.
+- Avisos: una observación o un cambio de estado avisa al usuario creador una sola vez.
+- Avisos: un cambio exclusivo de prioridad no genera correo.
 - Vista móvil: formulario, listados y modales son utilizables sin desplazamiento horizontal.
 
 
