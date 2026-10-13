@@ -858,14 +858,9 @@ Remitente: TDE <tde@iesisladeleon.es>
 
 # 20. Prioridad inmediata actual
 
-Orden actual:
+La hoja de ruta viva, con el estado de cada tarea y su prioridad, se mantiene en [Plan de trabajo pendiente](plan-pendiente.md).
 
-1. Mantener el workflow de GitHub Pages verde: lint, 11 pruebas y build deben pasar antes de cada despliegue.
-2. Validar desde un equipo externo el acceso con una cuenta `USUARIO` y otra `ADMINISTRADOR`.
-3. Comprobar creación, seguimiento, filtros, navegación y comportamiento móvil en producción.
-4. Verificar los avisos de correo de una incidencia nueva y de una actualización real.
-5. Revisar periódicamente si existen filas `FALLIDO` en `avisos_email`.
-6. Corregir cualquier incidencia encontrada en esos flujos.
+La prioridad inmediata es cerrar una prueba de aceptación sistemática en producción con cuentas `USUARIO` y `ADMINISTRADOR`, ambos tipos de incidencia, los dos flujos de correo y una comprobación móvil. Cualquier fallo encontrado debe corregirse antes de anunciar el servicio al conjunto del centro.
 
 ---
 
