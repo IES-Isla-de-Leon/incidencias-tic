@@ -690,24 +690,21 @@ Guardar actualización
 
 ---
 
-# 15. Qué NO hacer ahora
+# 15. Límites del estado actual
 
-No implementar todavía:
+No incorporar dentro de cambios no relacionados:
 
 - modelo `equipos`;
 - inventario;
 - QR;
-- fotografías;
-- adjuntos;
 - gestión visual de roles;
 - múltiples técnicos;
 - asignación de incidencias;
 - comentarios del usuario;
 - otras áreas distintas a TIC;
-- realtime;
-- Storage.
+- realtime.
 
-Mantener el MVP pequeño.
+Los adjuntos y las operaciones de Google Workspace sí están planificados, pero aún no forman parte del sistema descrito en este documento. Su alcance y sus decisiones se mantienen exclusivamente en [Evolución de cuentas y adjuntos](evolucion-cuentas-y-adjuntos.md), y su prioridad en [Plan de trabajo pendiente](plan-pendiente.md).
 
 Las notificaciones y la Edge Function ya están implementadas; no deben tratarse como trabajo pendiente.
 
@@ -847,12 +844,13 @@ Hosting previsto: GitHub Pages
 Roles: USUARIO / ADMINISTRADOR
 Área: solo TIC
 Sin equipos como entidad por ahora
-Sin adjuntos
 Sin técnicos múltiples
 Sin comentarios del usuario
 Avisos por correo con Resend
 Remitente: TDE <tde@iesisladeleon.es>
 ```
+
+Los adjuntos y la automatización de operaciones de Google Workspace son ampliaciones aprobadas pero todavía no implementadas. Sus decisiones funcionales no se duplican aquí; se encuentran en [Evolución de cuentas y adjuntos](evolucion-cuentas-y-adjuntos.md).
 
 ---
 

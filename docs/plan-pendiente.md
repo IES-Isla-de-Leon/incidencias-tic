@@ -49,15 +49,18 @@ Este documento recoge el estado real del proyecto y sirve como hoja de ruta para
 - ⬜ La Edge Function y las plantillas de correo no tienen pruebas unitarias propias.
 - ⬜ Los listados todavía cargan todas las incidencias; no hay paginación del lado del servidor.
 
-### Incidencias en nombre de otros usuarios
+### Integración con Workspace y adjuntos
 
 - ✅ Se ha creado una cuenta de servicio de Google con acceso de solo lectura al directorio.
 - ✅ Se ha verificado mediante una consulta real que la cuenta puede enumerar usuarios del dominio.
 - ✅ La clave se conserva fuera del repositorio con permisos locales restringidos.
-- 🟡 La arquitectura y los requisitos de seguridad están definidos en [incidencias-en-nombre-de-usuarios.md](incidencias-en-nombre-de-usuarios.md).
+- ✅ Se han definido el flujo funcional de restauración de contraseñas de alumnado y el alcance inicial de los adjuntos.
+- 🟡 El diseño consolidado y los requisitos de seguridad están recogidos en [evolucion-cuentas-y-adjuntos.md](evolucion-cuentas-y-adjuntos.md).
 - ⬜ Falta autenticar la CLI y guardar la credencial como secreto de la Edge Function en Supabase.
-- ⬜ Falta implementar la consulta protegida del directorio, la migración, las políticas RLS y el formulario administrativo.
-- ⬜ Falta verificar el flujo completo con un usuario del dominio que nunca haya iniciado sesión en la aplicación.
+- ⬜ Falta implementar la consulta protegida del directorio, la separación de identidades, la migración, las políticas RLS y los formularios.
+- ⬜ Falta implementar la aprobación y ejecución segura de restauraciones de contraseña.
+- ⬜ Falta crear el bucket privado, el modelo de adjuntos y su eliminación coordinada.
+- ⬜ La creación de cuentas queda pospuesta hasta revisar la hoja de cálculo y sus reglas.
 
 ### Privacidad de los avisos
 
@@ -119,9 +122,15 @@ Una interfaz para administrar usuarios puede posponerse; el procedimiento operat
 - Añadir pruebas para la Edge Function y para la generación de los correos.
 - Incorporar al flujo de integración continua las pruebas que no dependan de credenciales de producción.
 
-### P2 — Permitir incidencias en nombre de usuarios del dominio
+### P1 — Restaurar contraseñas de alumnado
 
-Implementar la ampliación descrita en [incidencias-en-nombre-de-usuarios.md](incidencias-en-nombre-de-usuarios.md). La identidad del administrador que registra la incidencia debe conservarse separada de la identidad del destinatario. La consulta de Google Workspace debe realizarse en backend y exigir el rol `ADMINISTRADOR`.
+Implementar el flujo aprobado en [evolucion-cuentas-y-adjuntos.md](evolucion-cuentas-y-adjuntos.md): solo miembros de `CLAUSTRO` podrán solicitar la restauración de una cuenta existente cuyo correo comience por `alum.`. El administrador aprobará o denegará cada solicitud y la operación se ejecutará en backend con auditoría, sin almacenar ni enviar la contraseña.
+
+Este trabajo incluye la base común para separar solicitante, destinatario y cuenta afectada, así como la consulta protegida del directorio. Debe abordarse después de cerrar P0.
+
+### P1 — Incorporar archivos adjuntos
+
+Añadir hasta tres archivos JPEG, PNG o PDF de un máximo de 5 MB cada uno durante la creación de una incidencia. Se almacenarán en un bucket privado y solo podrán descargarlos los usuarios autorizados y el administrador. El borrado de la incidencia deberá eliminar físicamente sus objetos de Storage.
 
 ### P2 — Preparar recuperación y mantenimiento periódico
 
@@ -132,6 +141,10 @@ Implementar la ampliación descrita en [incidencias-en-nombre-de-usuarios.md](in
 ### P3 — Incorporar paginación
 
 Actualmente el volumen previsto permite aplazarla, pero deberá añadirse antes de que el listado acumule suficientes incidencias como para afectar al tiempo de carga. La solución debe paginar desde Supabase, no solo ocultar filas ya descargadas en el navegador.
+
+### P3 — Crear cuentas de usuario
+
+Mantener pospuesta esta ampliación hasta revisar la hoja de cálculo actual y documentar las reglas de nombres, homónimos, unidades organizativas, grupos y autorizaciones. Su diseño preliminar está conservado en [evolucion-cuentas-y-adjuntos.md](evolucion-cuentas-y-adjuntos.md).
 
 ## Próxima acción concreta
 
