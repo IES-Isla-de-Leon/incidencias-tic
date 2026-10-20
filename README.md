@@ -16,6 +16,7 @@ Documentación:
 - [Arquitectura y estado operativo](docs/arquitectura.md)
 - [Modelo de datos](docs/modelo-datos.md)
 - [Plan de trabajo pendiente](docs/plan-pendiente.md)
+- [Incidencias registradas en nombre de usuarios](docs/incidencias-en-nombre-de-usuarios.md)
 - [Plan inicial histórico](docs/historico/plan-inicial.md)
 
 ## Desarrollo

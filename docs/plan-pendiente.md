@@ -1,6 +1,6 @@
 # Plan de trabajo pendiente
 
-Última revisión: 14 de octubre de 2026.
+Última revisión: 20 de octubre de 2026.
 
 Este documento recoge el estado real del proyecto y sirve como hoja de ruta para preparar su uso general en el centro. Debe actualizarse cuando se complete una tarea o cambie su prioridad.
 
@@ -48,6 +48,16 @@ Este documento recoge el estado real del proyecto y sirve como hoja de ruta para
 - ⬜ No hay pruebas automatizadas del recorrido completo contra una base de datos de pruebas.
 - ⬜ La Edge Function y las plantillas de correo no tienen pruebas unitarias propias.
 - ⬜ Los listados todavía cargan todas las incidencias; no hay paginación del lado del servidor.
+
+### Incidencias en nombre de otros usuarios
+
+- ✅ Se ha creado una cuenta de servicio de Google con acceso de solo lectura al directorio.
+- ✅ Se ha verificado mediante una consulta real que la cuenta puede enumerar usuarios del dominio.
+- ✅ La clave se conserva fuera del repositorio con permisos locales restringidos.
+- 🟡 La arquitectura y los requisitos de seguridad están definidos en [incidencias-en-nombre-de-usuarios.md](incidencias-en-nombre-de-usuarios.md).
+- ⬜ Falta autenticar la CLI y guardar la credencial como secreto de la Edge Function en Supabase.
+- ⬜ Falta implementar la consulta protegida del directorio, la migración, las políticas RLS y el formulario administrativo.
+- ⬜ Falta verificar el flujo completo con un usuario del dominio que nunca haya iniciado sesión en la aplicación.
 
 ### Privacidad de los avisos
 
@@ -108,6 +118,10 @@ Una interfaz para administrar usuarios puede posponerse; el procedimiento operat
 - Probar las políticas de acceso con los roles `USUARIO` y `ADMINISTRADOR`.
 - Añadir pruebas para la Edge Function y para la generación de los correos.
 - Incorporar al flujo de integración continua las pruebas que no dependan de credenciales de producción.
+
+### P2 — Permitir incidencias en nombre de usuarios del dominio
+
+Implementar la ampliación descrita en [incidencias-en-nombre-de-usuarios.md](incidencias-en-nombre-de-usuarios.md). La identidad del administrador que registra la incidencia debe conservarse separada de la identidad del destinatario. La consulta de Google Workspace debe realizarse en backend y exigir el rol `ADMINISTRADOR`.
 
 ### P2 — Preparar recuperación y mantenimiento periódico
 
