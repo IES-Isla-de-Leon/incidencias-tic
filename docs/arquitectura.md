@@ -1,6 +1,6 @@
 # Arquitectura y estado operativo — Gestión de incidencias TIC · IES Isla de León
 
-> Fuente de verdad actual del proyecto. Actualizado el 14/10/2026.
+> Fuente de verdad actual del proyecto. Actualizado el 21/10/2026.
 >
 > La aplicación vigente ocupa la raíz del repositorio. Las secciones que describen la migración desde los prototipos se conservan como contexto, pero esa migración ya está implementada.
 
@@ -858,7 +858,7 @@ Los adjuntos y la automatización de operaciones de Google Workspace son ampliac
 
 La hoja de ruta viva, con el estado de cada tarea y su prioridad, se mantiene en [Plan de trabajo pendiente](plan-pendiente.md).
 
-La prioridad inmediata es cerrar una prueba de aceptación sistemática en producción con cuentas `USUARIO` y `ADMINISTRADOR`, ambos tipos de incidencia, los dos flujos de correo y una comprobación móvil. Cualquier fallo encontrado debe corregirse antes de anunciar el servicio al conjunto del centro.
+La prueba de aceptación P0 quedó cerrada satisfactoriamente el 21 de octubre de 2026. La siguiente ampliación funcional prioritaria es preparar el diseño técnico ejecutable de la restauración de contraseñas de alumnado descrita en [Evolución de cuentas y adjuntos](evolucion-cuentas-y-adjuntos.md).
 
 ---
 

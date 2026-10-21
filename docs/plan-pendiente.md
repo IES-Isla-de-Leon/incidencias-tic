@@ -1,6 +1,6 @@
 # Plan de trabajo pendiente
 
-Última revisión: 20 de octubre de 2026.
+Última revisión: 21 de octubre de 2026.
 
 Este documento recoge el estado real del proyecto y sirve como hoja de ruta para preparar su uso general en el centro. Debe actualizarse cuando se complete una tarea o cambie su prioridad.
 
@@ -26,12 +26,11 @@ Este documento recoge el estado real del proyecto y sirve como hoja de ruta para
 
 ### Validación funcional en producción
 
-- 🟡 La aplicación desplegada se ha probado de forma general y funciona correctamente en las comprobaciones realizadas.
-- 🟡 El formulario impide nuevos envíos mientras una creación está en curso, pero falta comprobar de forma dirigida el comportamiento ante doble pulsación y conexiones lentas.
-- 🟡 Se ha comprobado el envío real de correo con Resend, incluido al menos un aviso de nueva incidencia.
-- ⬜ Falta una prueba de aceptación completa y anotada con una cuenta normal y una cuenta administradora.
-- ⬜ Falta confirmar en producción el ciclo completo de los dos avisos: nueva incidencia para administradores y actualización para el comunicante.
-- ⬜ Falta una comprobación específica en móvil y ante errores o pérdida de conexión.
+- ✅ La prueba de aceptación P0 se cerró satisfactoriamente el 21 de octubre de 2026.
+- ✅ Se validaron en producción la autenticación, los permisos, ambos tipos de incidencia y la gestión administrativa.
+- ✅ Se comprobó el ciclo de avisos: nueva incidencia para administradores y actualización para el comunicante.
+- ✅ Se comprobaron el bloqueo de envíos duplicados, las conexiones lentas y la recuperación ante fallos de red.
+- ✅ Se comprobaron desde móvil las acciones principales del usuario y del administrador.
 
 ### Operación y mantenimiento
 
@@ -69,11 +68,13 @@ Este documento recoge el estado real del proyecto y sirve como hoja de ruta para
 
 ## Orden propuesto
 
-### P0 — Cerrar la validación de producción
+### P0 — Validación de producción ✅
 
-Es el siguiente paso más prioritario. Antes de añadir nuevas funciones conviene comprobar de manera sistemática que autenticación, permisos, gestión y correos funcionan conjuntamente en el entorno real.
+Completada el 21 de octubre de 2026. Se comprobó de manera sistemática que autenticación, permisos, gestión y correos funcionan conjuntamente en el entorno real.
 
-La prueba debe realizarse con una cuenta normal y una administradora e incluir:
+La ejecución detallada y el registro de resultados se encuentran en [prueba-aceptacion-p0.md](prueba-aceptacion-p0.md). Cada problema debe identificarse mediante el código estable del paso correspondiente.
+
+La prueba cubrió:
 
 1. Iniciar sesión con ambas cuentas.
 2. Crear una incidencia de «Gestión de cuentas de usuario» y otra de «Incidencias sobre equipamiento».
@@ -85,7 +86,7 @@ La prueba debe realizarse con una cuenta normal y una administradora e incluir:
 8. Comprobar el envío con conexión lenta, doble pulsación y un fallo de red controlado.
 9. Anotar el resultado y cualquier incidencia encontrada.
 
-Se considerará terminado cuando todos los puntos estén comprobados y no haya errores de permisos, duplicados ni avisos perdidos.
+P0 queda cerrada sin errores pendientes de permisos, duplicados ni avisos perdidos comunicados por el responsable.
 
 ### P1 — Decidir la privacidad del correo
 
@@ -126,7 +127,7 @@ Una interfaz para administrar usuarios puede posponerse; el procedimiento operat
 
 Implementar el flujo aprobado en [evolucion-cuentas-y-adjuntos.md](evolucion-cuentas-y-adjuntos.md): solo miembros de `CLAUSTRO` podrán solicitar la restauración de una cuenta existente cuyo correo comience por `alum.`. El administrador aprobará o denegará cada solicitud y la operación se ejecutará en backend con auditoría, sin almacenar ni enviar la contraseña.
 
-Este trabajo incluye la base común para separar solicitante, destinatario y cuenta afectada, así como la consulta protegida del directorio. Debe abordarse después de cerrar P0.
+Este trabajo incluye la base común para separar solicitante, destinatario y cuenta afectada, así como la consulta protegida del directorio. Es la siguiente ampliación funcional prioritaria tras el cierre de P0.
 
 ### P1 — Incorporar archivos adjuntos
 
@@ -148,4 +149,4 @@ Mantener pospuesta esta ampliación hasta revisar la hoja de cálculo actual y d
 
 ## Próxima acción concreta
 
-Preparar y ejecutar la prueba de aceptación de P0, registrando cada resultado en este mismo documento o en una lista de comprobación vinculada. Si aparece un fallo, su corrección tendrá prioridad sobre las mejoras P1–P3.
+Preparar el diseño técnico ejecutable de la restauración de contraseñas de alumnado: migración del modelo, políticas RLS, consulta protegida del directorio, estados de aprobación, Edge Functions, auditoría, notificaciones y pruebas. La implementación debe comenzar por el flujo de solicitud y aprobación sin activar todavía el cambio real de contraseña.
