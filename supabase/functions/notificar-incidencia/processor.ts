@@ -82,7 +82,8 @@ async function buildEmail(supabase: any, notice: Record<string, any>): Promise<E
     .select(`
       id,codigo,descripcion,prioridad,estado,tipo,
       estancias(nombre,ubicacion),
-      usuarios!incidencias_creada_por_fkey(nombre,email)
+      usuarios!incidencias_creada_por_fkey(nombre,email),
+      adjuntos_incidencia(id)
     `)
     .eq('id', notice.incidencia_id)
     .single()
@@ -91,6 +92,7 @@ async function buildEmail(supabase: any, notice: Record<string, any>): Promise<E
 
   const room = Array.isArray(incident.estancias) ? incident.estancias[0] : incident.estancias
   const reporter = Array.isArray(incident.usuarios) ? incident.usuarios[0] : incident.usuarios
+  const attachmentCount = incident.adjuntos_incidencia?.length ?? 0
   const location = room ? `${room.nombre} · ${room.ubicacion}` : null
   const greetingText = `Hola ${notice.destinatario_nombre},`
   const greetingHtml = `<p>Hola ${escapeHtml(notice.destinatario_nombre)},</p>`
@@ -101,13 +103,14 @@ async function buildEmail(supabase: any, notice: Record<string, any>): Promise<E
       textLine('Tipo', incidentTypeLabel(incident.tipo)),
       textLine('Prioridad', priorityLabel(incident.prioridad)),
       textLine('Estancia', location),
-      textLine('Comunicada por', reporter ? `${reporter.nombre} (${reporter.email})` : null)
+      textLine('Comunicada por', reporter ? `${reporter.nombre} (${reporter.email})` : null),
+      textLine('Archivos adjuntos', attachmentCount || null)
     ].filter(Boolean).join('\n')
 
     return {
       subject: `Nueva incidencia ${incident.codigo} · ${priorityLabel(incident.prioridad)}`,
       text: `${greetingText}\n\nSe ha recibido una nueva incidencia TIC.\n\n${details}\n\nDescripción:\n${incident.descripcion}`,
-      html: `${greetingHtml}<p>Se ha recibido una nueva incidencia TIC.</p><table>${htmlRow('Código', incident.codigo)}${htmlRow('Tipo', incidentTypeLabel(incident.tipo))}${htmlRow('Prioridad', priorityLabel(incident.prioridad))}${htmlRow('Estancia', location)}${htmlRow('Comunicada por', reporter ? `${reporter.nombre} (${reporter.email})` : null)}</table><p><strong>Descripción</strong></p><p style="white-space:pre-wrap">${escapeHtml(incident.descripcion)}</p>`
+      html: `${greetingHtml}<p>Se ha recibido una nueva incidencia TIC.</p><table>${htmlRow('Código', incident.codigo)}${htmlRow('Tipo', incidentTypeLabel(incident.tipo))}${htmlRow('Prioridad', priorityLabel(incident.prioridad))}${htmlRow('Estancia', location)}${htmlRow('Comunicada por', reporter ? `${reporter.nombre} (${reporter.email})` : null)}${htmlRow('Archivos adjuntos', attachmentCount || null)}</table><p><strong>Descripción</strong></p><p style="white-space:pre-wrap">${escapeHtml(incident.descripcion)}</p>`
     }
   }
 

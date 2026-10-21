@@ -11,7 +11,8 @@ import {
 const props = defineProps({
   modelValue: { type: String, default: '' },
   rooms: { type: Array, required: true },
-  loading: { type: Boolean, default: false }
+  loading: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -52,7 +53,7 @@ function openOptions(open) {
 </script>
 
 <template>
-  <Combobox v-slot="{ open }" v-model="selectedRoom" by="id" nullable :disabled="loading">
+  <Combobox v-slot="{ open }" v-model="selectedRoom" by="id" nullable :disabled="loading || disabled">
     <div class="relative">
       <ComboboxInput
         id="incident-room"

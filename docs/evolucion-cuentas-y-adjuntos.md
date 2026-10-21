@@ -201,6 +201,8 @@ Antes de diseñarla será necesario revisar la hoja y resolver:
 
 ## 4. Archivos adjuntos
 
+> Estado a 21 de octubre de 2026: implementación local completada y validada en frontend; migraciones y Edge Functions pendientes de aplicar y probar en el proyecto remoto.
+
 ### Alcance acordado para la primera versión
 
 - Los controles de adjuntos solo aparecerán en «Incidencias sobre equipamiento»; los flujos de cuentas permanecerán simples y sin adjuntos.

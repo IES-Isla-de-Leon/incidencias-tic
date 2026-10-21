@@ -27,7 +27,7 @@ export function useRooms() {
     const [roomsResult, incidentsResult] = await Promise.all([
       roomsQuery,
       includeIncidentCounts
-        ? supabase.from('incidencias').select('estancia_id,estado')
+        ? supabase.from('incidencias').select('estancia_id,estado').not('publicada_en', 'is', null)
         : Promise.resolve({ data: [], error: null })
     ])
 

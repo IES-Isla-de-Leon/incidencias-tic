@@ -18,6 +18,9 @@ const detail = ref(null)
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
+const attachmentAction = ref('')
+const attachmentError = ref('')
+const confirmingAttachmentDelete = ref('')
 const quickStatus = ref('')
 const confirmingDelete = ref(false)
 const error = ref('')
@@ -39,6 +42,7 @@ async function load() {
     status.value = detail.value.estado
     observation.value = ''
     confirmingDelete.value = false
+    confirmingAttachmentDelete.value = ''
     deleteError.value = ''
     await nextTick()
     closeButton.value?.focus()
@@ -54,13 +58,45 @@ async function removeIncident() {
   deleteError.value = ''
 
   try {
-    await incidents.deleteIncident(detail.value.id)
+    await incidents.deleteIncident(detail.value)
     emit('saved')
     emit('close')
   } catch (caught) {
     deleteError.value = caught.message
   } finally {
     deleting.value = false
+  }
+}
+
+function formatFileSize(bytes) {
+  return bytes < 1024 * 1024
+    ? `${Math.ceil(bytes / 1024)} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function downloadAttachment(attachment) {
+  attachmentAction.value = `download-${attachment.id}`
+  attachmentError.value = ''
+  try {
+    await incidents.downloadAttachment(attachment)
+  } catch (caught) {
+    attachmentError.value = caught.message
+  } finally {
+    attachmentAction.value = ''
+  }
+}
+
+async function removeAttachment(attachment) {
+  attachmentAction.value = `delete-${attachment.id}`
+  attachmentError.value = ''
+  try {
+    await incidents.removeAdminAttachment(attachment)
+    detail.value.adjuntos_incidencia = detail.value.adjuntos_incidencia.filter((item) => item.id !== attachment.id)
+    confirmingAttachmentDelete.value = ''
+  } catch (caught) {
+    attachmentError.value = caught.message
+  } finally {
+    attachmentAction.value = ''
   }
 }
 
@@ -158,6 +194,34 @@ onBeforeUnmount(() => {
             </dl>
           </section>
 
+          <section v-if="detail.adjuntos_incidencia?.length" class="border-t border-slate-200 p-5 sm:p-6">
+            <h3 class="text-lg font-bold">Archivos adjuntos</h3>
+            <p class="mt-1 text-sm text-slate-600">{{ detail.adjuntos_incidencia.length }} {{ detail.adjuntos_incidencia.length === 1 ? 'archivo' : 'archivos' }}</p>
+            <div v-if="attachmentError" class="mt-4 notice-error" role="alert">{{ attachmentError }}</div>
+            <ul class="mt-4 divide-y divide-slate-200 rounded-lg border border-slate-200">
+              <li v-for="attachment in detail.adjuntos_incidencia" :key="attachment.id" class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
+                  <p class="truncate font-medium text-slate-800">{{ attachment.nombre_original }}</p>
+                  <p class="text-sm text-slate-500">{{ formatFileSize(attachment.tamano_bytes) }}</p>
+                </div>
+                <div class="flex shrink-0 gap-2">
+                  <button class="btn-secondary" type="button" :disabled="Boolean(attachmentAction)" data-test="download-attachment" @click="downloadAttachment(attachment)">
+                    {{ attachmentAction === `download-${attachment.id}` ? 'Descargando…' : 'Descargar' }}
+                  </button>
+                  <template v-if="admin">
+                    <button v-if="confirmingAttachmentDelete !== attachment.id" class="btn-ghost text-rose-700" type="button" :disabled="Boolean(attachmentAction)" data-test="delete-attachment" @click="confirmingAttachmentDelete = attachment.id">Eliminar</button>
+                    <template v-else>
+                      <button class="btn-ghost" type="button" :disabled="Boolean(attachmentAction)" @click="confirmingAttachmentDelete = ''">Cancelar</button>
+                      <button class="inline-flex min-h-10 items-center justify-center rounded-lg bg-rose-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50" type="button" :disabled="Boolean(attachmentAction)" data-test="confirm-delete-attachment" @click="removeAttachment(attachment)">
+                        {{ attachmentAction === `delete-${attachment.id}` ? 'Eliminando…' : 'Confirmar' }}
+                      </button>
+                    </template>
+                  </template>
+                </div>
+              </li>
+            </ul>
+          </section>
+
           <section class="border-t border-slate-200 p-5 sm:p-6">
             <h3 class="text-lg font-bold">Seguimiento</h3>
             <div v-if="detail.updates.length" class="mt-5 space-y-5">
@@ -230,7 +294,7 @@ onBeforeUnmount(() => {
             <div v-if="!confirmingDelete" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 class="font-bold text-slate-900">Eliminar incidencia</h3>
-                <p class="mt-1 text-sm text-slate-600">Esta acción elimina también todo su historial de seguimiento.</p>
+                <p class="mt-1 text-sm text-slate-600">Esta acción elimina también todo su historial y sus archivos adjuntos.</p>
               </div>
               <button
                 class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-800 transition hover:border-rose-300 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -244,7 +308,7 @@ onBeforeUnmount(() => {
 
             <div v-else class="rounded-lg border border-rose-200 bg-rose-50 p-4">
               <h3 class="font-bold text-rose-950">¿Eliminar {{ detail.codigo }} definitivamente?</h3>
-              <p class="mt-1 text-sm text-rose-800">No se podrá recuperar la incidencia ni su historial.</p>
+              <p class="mt-1 text-sm text-rose-800">No se podrá recuperar la incidencia, su historial ni sus archivos.</p>
               <div v-if="deleteError" class="mt-4 notice-error" role="alert">{{ deleteError }}</div>
               <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button class="btn-secondary" type="button" :disabled="deleting" @click="confirmingDelete = false">Cancelar</button>

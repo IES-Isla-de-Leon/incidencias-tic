@@ -80,6 +80,15 @@ supabase/migrations/202610130001_avisos_email.sql
 supabase/migrations/202610140001_endurecer_funciones_privilegiadas.sql
 ```
 
+El repositorio incorpora además las migraciones de adjuntos, pendientes de aplicar en el entorno remoto:
+
+```text
+supabase/migrations/202610210001_adjuntos_incidencias.sql
+supabase/migrations/202610210002_limpiar_borradores.sql
+```
+
+Estas crean el bucket privado, los metadatos y políticas RLS, el flujo borrador-publicación y la limpieza programada de borradores abandonados.
+
 Las dos primeras migraciones recogen el esquema y las políticas RLS que originalmente se aplicaron de forma manual. Las posteriores fuerzan que los cambios de estado procedan del historial de actualizaciones, sustituyen el borrado de estancias por su activación/desactivación, permiten borrar incidencias únicamente a los administradores, distinguen entre incidencias de cuentas de usuario y de equipamiento, añaden la cola de avisos por correo y endurecen las funciones `SECURITY DEFINER` y sus permisos de ejecución.
 
 La CLI de Supabase está instalada como dependencia de desarrollo y el proyecto está vinculado. Para revisar y aplicar futuras migraciones:
@@ -114,11 +123,15 @@ La tabla no es accesible desde el frontend. La función requiere:
 - `incident_email_webhook_secret`, con el mismo valor, almacenado en Vault;
 - `project_url`, almacenado en Vault.
 
-No se deben copiar esos valores al repositorio, a archivos `.env` del frontend ni a la documentación. Para desplegar de nuevo la función:
+No se deben copiar esos valores al repositorio, a archivos `.env` del frontend ni a la documentación. Para desplegar las funciones de correo y adjuntos:
 
 ```text
-npx supabase functions deploy notificar-incidencia --no-verify-jwt --use-api
+npx supabase functions deploy notificar-incidencia --use-api
+npx supabase functions deploy limpiar-borradores --use-api
+npx supabase functions deploy gestionar-adjuntos --use-api
 ```
+
+`notificar-incidencia` y `limpiar-borradores` validan el secreto compartido del webhook y tienen la verificación JWT desactivada en `supabase/config.toml`. `gestionar-adjuntos` conserva la verificación JWT y vuelve a comprobar en backend que quien borra sea un administrador activo.
 
 Una llamada correcta con la cola vacía devuelve:
 
@@ -145,6 +158,12 @@ order by estado;
 - Administrador: consulta todas, filtra, cambia prioridad y registra cambios de estado.
 - Administrador: abre las incidencias de una estancia desde su recuento y puede cambiar o retirar ese filtro.
 - Administrador: elimina una incidencia de prueba tras la confirmación y se elimina también su seguimiento.
+- Usuario normal: adjunta hasta tres JPG, PNG o PDF de un máximo de 5 MB a una incidencia de equipamiento.
+- Usuario normal: ante una subida fallida puede reintentar o quitar el archivo; el borrador no aparece ni genera correo hasta finalizar.
+- Usuario normal: las incidencias de cuentas no muestran controles de adjuntos.
+- Usuario y administrador: descargan adjuntos únicamente tras autenticarse.
+- Administrador: elimina un adjunto tras confirmarlo y al borrar una incidencia se eliminan también sus objetos.
+- Limpieza: un borrador abandonado durante más de 15 minutos y sus objetos desaparecen mediante la tarea programada.
 - Administrador: crea, edita, activa y desactiva estancias.
 - Avisos: una nueva incidencia avisa a los administradores activos.
 - Avisos: una observación o un cambio de estado avisa al usuario creador una sola vez.
