@@ -131,7 +131,7 @@ Este trabajo incluye la base común para separar solicitante, destinatario y cue
 
 ### P1 — Incorporar archivos adjuntos
 
-Añadir hasta tres archivos JPEG, PNG o PDF de un máximo de 5 MB cada uno durante la creación de una incidencia. Se almacenarán en un bucket privado y solo podrán descargarlos los usuarios autorizados y el administrador. El borrado de la incidencia deberá eliminar físicamente sus objetos de Storage.
+Añadir durante la creación de incidencias de equipamiento hasta tres archivos JPEG, PNG o PDF de un máximo de 5 MB cada uno. Se almacenarán en un bucket privado y solo podrán descargarlos los usuarios autorizados y el administrador. La publicación se aplazará hasta completar o retirar las subidas fallidas, y el borrado de la incidencia deberá eliminar físicamente sus objetos de Storage. Los flujos de cuentas no mostrarán ni admitirán adjuntos.
 
 ### P2 — Preparar recuperación y mantenimiento periódico
 

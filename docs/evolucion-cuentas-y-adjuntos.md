@@ -1,6 +1,6 @@
 # Evolución de incidencias de cuentas y adjuntos
 
-Última revisión: 20 de octubre de 2026.
+Última revisión: 21 de octubre de 2026.
 
 ## Alcance y relación con el resto de la documentación
 
@@ -203,7 +203,9 @@ Antes de diseñarla será necesario revisar la hoja y resolver:
 
 ### Alcance acordado para la primera versión
 
-- Los archivos se adjuntan únicamente durante la creación de la incidencia.
+- Los controles de adjuntos solo aparecerán en «Incidencias sobre equipamiento»; los flujos de cuentas permanecerán simples y sin adjuntos.
+- El backend rechazará adjuntos asociados a una incidencia de tipo `CUENTAS_USUARIO`. Esta restricción podrá relajarse en el futuro sin cambiar el modelo de almacenamiento.
+- Los archivos se adjuntan únicamente durante la creación de la incidencia de equipamiento.
 - Máximo de tres archivos por incidencia.
 - Máximo de 5 MB por archivo.
 - Tipos admitidos: JPEG, PNG y PDF.
@@ -211,13 +213,15 @@ Antes de diseñarla será necesario revisar la hoja y resolver:
 - No se realizará análisis antivirus en la primera versión.
 - Los usuarios no añadirán archivos después de enviar la incidencia.
 - Los administradores podrán eliminar adjuntos en cualquier momento.
+- La eliminación individual será definitiva y no conservará un registro histórico del archivo eliminado.
 - Al eliminar una incidencia se eliminarán también físicamente todos sus archivos.
 - No se necesita previsualización; la descarga autenticada es suficiente.
+- El usuario y el administrador verán el nombre original del archivo, pero nunca su ruta interna.
 - No se define por ahora un plazo adicional de conservación.
 
 ### Diseño funcional recomendado
 
-Los objetos se almacenarán en un bucket privado de Supabase Storage. Una tabla propia relacionará cada archivo con su incidencia y conservará al menos:
+Los objetos se almacenarán en un bucket privado `incidencias-adjuntos` de Supabase Storage, limitado a 5 MB y a los tres tipos MIME admitidos. Una tabla propia `adjuntos_incidencia` relacionará cada archivo con su incidencia y conservará al menos:
 
 - incidencia;
 - ruta interna aleatoria;
@@ -229,17 +233,38 @@ Los objetos se almacenarán en un bucket privado de Supabase Storage. Una tabla 
 
 Los nombres originales no se usarán como ruta del objeto. Las políticas de acceso deberán reproducir las de la incidencia: el solicitante o destinatario autorizado podrá descargar sus archivos y el administrador podrá descargar y eliminar todos.
 
+La ruta interna tendrá una estructura equivalente a:
+
+```text
+<usuario-id>/<incidencia-id>/<adjunto-id>.<extension>
+```
+
+No se permitirán sobrescrituras. Los usuarios solo podrán eliminar sus propios objetos mientras la incidencia siga siendo un borrador; después de publicarla, únicamente el administrador podrá eliminarlos.
+
 ### Secuencia de creación
 
-La alternativa preferida es:
+La incidencia se creará en dos fases para impedir que el correo administrativo salga antes de que los adjuntos estén disponibles:
 
 1. validar formulario y archivos en el navegador;
-2. crear la incidencia;
+2. crear la incidencia como borrador, todavía oculta en los listados y sin generar avisos;
 3. subir los archivos con rutas nuevas y no sobrescribibles;
 4. registrar su relación con la incidencia;
-5. mostrar el resultado final.
+5. finalizar y publicar la incidencia mediante una operación protegida;
+6. mostrar el resultado final y encolar el correo administrativo con el número real de adjuntos.
 
-Si una subida falla, la incidencia seguirá creada y la interfaz deberá explicar qué archivos no llegaron a guardarse. El diseño técnico deberá decidir si se ofrece reintento inmediato dentro de esa misma pantalla o si se revierte la incidencia recién creada cuando no se haya podido subir ningún adjunto.
+El modelo incorporará un indicador equivalente a `publicada_en`. Las incidencias existentes se migrarán como publicadas. La finalización comprobará que la incidencia pertenece al usuario autenticado, que es de equipamiento y que no supera los límites definidos.
+
+Durante el envío, la interfaz mostrará fases explícitas: creación, subida de cada archivo y finalización. El botón permanecerá deshabilitado durante todo el proceso.
+
+Si una subida falla, la incidencia no se publicará. El usuario deberá elegir entre reintentar ese archivo o retirarlo y continuar con los demás. No se enviará correo ni se mostrará el borrador en los listados hasta que el usuario resuelva el fallo y finalice la operación.
+
+### Cancelación y borradores abandonados
+
+- Si el usuario pulsa cancelar, cambia de tipo o abandona mediante un control de la aplicación, se intentarán eliminar inmediatamente los objetos ya subidos y el borrador.
+- Al cerrar una pestaña, apagar el equipo o perder la red no se puede garantizar que el navegador complete una petición de limpieza.
+- La aplicación realizará un intento de limpieza al detectar la salida de la página, pero se tratará como una optimización y no como garantía.
+- Una tarea programada eliminará como respaldo los borradores y objetos que lleven un breve periodo sin actividad. El umbral técnico se fijará inicialmente en 15 minutos para evitar borrar una subida lenta que siga en curso.
+- No se ofrecerá recuperación de borradores: un envío interrumpido deberá comenzar de nuevo.
 
 ### Seguridad y eliminación
 
@@ -248,8 +273,10 @@ Si una subida falla, la incidencia seguirá creada y la interfaz deberá explica
 - Los mensajes podrán indicar que la incidencia contiene archivos y enlazar a la aplicación.
 - La extensión y el MIME declarados por el navegador se validarán antes de aceptar el archivo.
 - Las rutas incluirán identificadores aleatorios para evitar colisiones y exposición de nombres.
-- La eliminación de una incidencia no puede depender solo de una cascada SQL: un proceso de backend deberá borrar los objetos mediante la API de Storage y registrar el resultado.
-- Debe existir una tarea de limpieza para detectar objetos huérfanos producidos por interrupciones entre la subida y el registro en la base de datos.
+- La eliminación individual de un adjunto exigirá confirmación administrativa, borrará primero el objeto mediante la API de Storage y después eliminará sus metadatos. No se conservará una marca o historial de esa eliminación.
+- La eliminación de una incidencia no puede depender solo de una cascada SQL: una operación de backend validará el rol `ADMINISTRADOR`, borrará todos los objetos mediante la API de Storage y solo después eliminará la incidencia.
+- Si Storage falla, la incidencia o el adjunto permanecerán registrados y la interfaz mostrará el error para poder reintentar; no se dejará una eliminación parcial presentada como correcta.
+- La tarea de limpieza de borradores también detectará objetos huérfanos producidos por interrupciones entre la subida y el registro de metadatos.
 
 ## 5. Notificaciones
 
